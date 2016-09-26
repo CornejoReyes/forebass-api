@@ -14,12 +14,21 @@ class Note extends Model{
         $response = new Response();
 
         try{
-            $response->rows = self::all();
-            $response->code = 200;
+            $query = self::where('active',1)->get();
+            if(empty($query[0])){
+
+                $response->code = 500;
+                $response->msg = "Se produjo un error al obtener las notas";
+
+            }else{
+                $response->code = 200;
+                $response->rows = $query;
+            }
         }
         catch(\Exception $e){
             $response->msg = 'Se produjo un error al obtener las notas.';
             $response->exception = $e->getMessage();
+            $response->code = 500;
         }
 
         return $response;
@@ -31,12 +40,21 @@ class Note extends Model{
         $response = new Response();
 
         try{
-            $response->rows = self::where('id', $id)->get();
-            $response->code = 200;
+            $query = self::where('id', $id)->where('active',1)->first();
+            if($query){
+
+                $response->code = 200;
+                $response->rows = $query;
+
+            }else{
+                $response->code = 500;
+                $response->msg = "La nota no existe";
+            }
         }
         catch(\Exception $e){
             $response->msg = 'Se produjo un error al obtener la nota.';
             $response->exception = $e->getMessage();
+            $response->code = 500;
         }
 
         return $response;
@@ -66,6 +84,53 @@ class Note extends Model{
             $response->msg = "Se produjo un error al crear la nota";
             $response->exception = $e->getMessage();
             $response->code = 500;
+        }
+
+        return $response;
+
+    }
+
+    public static function updateNote($note){
+
+        $response = new Response();
+
+        try{
+
+            $note->save();
+            $response->code = 200;
+            $response->msg = 'Nota modificada exitosamente';
+
+        }
+        catch(\Exception $e){
+
+            $response->code = 500;
+            $response->msg = "Hubo un error al modificar la nota";
+            $response->exception = $e->getMessage();
+
+        }
+
+        return $response;
+
+    }
+
+    public static function deleteNote($id){
+        $response = new Response();
+
+        try{
+
+            $note = self::find($id);
+            $note->active = 0;
+            $note->save();
+            $response->code = 200;
+            $response->msg = "Nota borrada correctamente";
+
+        }
+        catch(\Exception $e){
+
+            $response->code = 500;
+            $response->msg = "Hubo un error al borrar la nota";
+            $response->exception = $e->getMessage();
+
         }
 
         return $response;
