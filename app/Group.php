@@ -3,11 +3,10 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
-use DB;
 
-class Note extends Model{
-
-    protected $table = "notes";
+class Group extends Model
+{
+    protected $table = "groups";
 
     protected $fillable = [
         'title', 'description'
@@ -19,8 +18,8 @@ class Note extends Model{
     public function user(){
         return $this->belongsTo('App\User');
     }
-    public function group(){
-        return $this->belongsTo('App\Group');
+    public function notes(){
+        return $this->hasMany('App\Note');
     }
 
     public static function getAll(){
@@ -31,12 +30,12 @@ class Note extends Model{
             $response->rows = self::where('active',1)->get();
             $response->code = 200;
             if(!$response->rows) {
-                $reponse->msg = "No se encontró información de notas";
+                $reponse->msg = "No se encontró información de grupos";
             }
 
         }
         catch(\Exception $e){
-            $response->msg = 'Se produjo un error al obtener las notas.';
+            $response->msg = 'Se produjo un error al obtener los grupos.';
             $response->exception = $e->getMessage();
             $response->code = 500;
         }
@@ -57,12 +56,12 @@ class Note extends Model{
                 $response->rows = $query;
 
             }else{
-                $response->code = 500;
-                $response->msg = "La nota no existe";
+                $response->code = 401;
+                $response->msg = "El grupo no existe";
             }
         }
         catch(\Exception $e){
-            $response->msg = 'Se produjo un error al obtener la nota.';
+            $response->msg = 'Se produjo un error al obtener el grupo.';
             $response->exception = $e->getMessage();
             $response->code = 500;
         }
@@ -70,30 +69,24 @@ class Note extends Model{
         return $response;
 
     }
+    public static function getNotes($id){
 
-    public static function createNew($note){
-
-        $newNote = new Note();
         $response = new Response();
 
         try{
+            $query = self::where('id', $id)->where('active',1)->with('notes')->first();
+            if($query){
 
-            $newNote->user_id = $note['user_id'];
-            $newNote->title = $note['title'];
-            if(isset($note['group_id'])){
-                $newNote->group_id = $note['group_id'];
+                $response->code = 200;
+                $response->rows = $query;
+
+            }else{
+                $response->code = 401;
+                $response->msg = "El grupo no existe";
             }
-            $newNote->description = $note['description'];
-            $newNote->active = 1;
-
-            $newNote->save();
-
-            $response->code = 200;
-            $response->msg = "Nota creada correctamente";
-
         }
         catch(\Exception $e){
-            $response->msg = "Se produjo un error al crear la nota";
+            $response->msg = 'Se produjo un error al obtener el grupo.';
             $response->exception = $e->getMessage();
             $response->code = 500;
         }
@@ -102,21 +95,48 @@ class Note extends Model{
 
     }
 
-    public static function updateNote($note){
+    public static function createNew($group){
+
+        $newGroup = new Group();
+        $response = new Response();
+
+        try{
+
+            $newGroup->user_id = $group['user_id'];
+            $newGroup->title = $group['title'];
+            $newGroup->active = 1;
+
+            $newGroup->save();
+
+            $response->code = 200;
+            $response->msg = "Grupo creado correctamente";
+
+        }
+        catch(\Exception $e){
+            $response->msg = "Se produjo un error al crear el grupo";
+            $response->exception = $e->getMessage();
+            $response->code = 500;
+        }
+
+        return $response;
+
+    }
+
+    public static function updateGroup($group){
 
         $response = new Response();
 
         try{
 
-            $note->save();
+            $group->save();
             $response->code = 200;
-            $response->msg = 'Nota modificada exitosamente';
+            $response->msg = 'Grupo modificado exitosamente';
 
         }
         catch(\Exception $e){
 
             $response->code = 500;
-            $response->msg = "Hubo un error al modificar la nota";
+            $response->msg = "Hubo un error al modificar el grupo";
             $response->exception = $e->getMessage();
 
         }
@@ -125,21 +145,21 @@ class Note extends Model{
 
     }
 
-    public static function deleteNote($id){
+    public static function deleteGroup($id){
         $response = new Response();
 
         try{
 
-            $note = self::find($id);
-            $note->delete();
+            $group = self::find($id);
+            $group->delete();
             $response->code = 200;
-            $response->msg = "Nota borrada correctamente";
+            $response->msg = "Grupo borrado correctamente";
 
         }
         catch(\Exception $e){
 
             $response->code = 500;
-            $response->msg = "Hubo un error al borrar la nota";
+            $response->msg = "Hubo un error al borrar el grupo";
             $response->exception = $e->getMessage();
 
         }
@@ -147,5 +167,4 @@ class Note extends Model{
         return $response;
 
     }
-
 }

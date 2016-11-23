@@ -5,26 +5,26 @@ namespace App\Http\Controllers;
 
 //use App\Http\Requests;
 use Request;
-use \App\Note;
+use \App\Group;
 
-class NotesController extends Controller
+class GroupsController extends Controller
 {
 
     public function getAll(){
-        $response = \App\Note::getAll();
+        $response = \App\Group::getAll();
         return response()->json($response)->setStatusCode($response->code);
     }
 
     public function get($id){
-        $response = \App\Note::get($id);
+        $response = \App\Group::get($id);
         return response()->json($response)->setStatusCode($response->code);
     }
 
     public function create(){
 
-        $note = Request::all();
+        $group = Request::all();
 
-        $response = \App\Note::createNew($note);
+        $response = \App\Group::createNew($group);
 
         return response()->json($response)->setStatusCode($response->code);
 
@@ -32,15 +32,11 @@ class NotesController extends Controller
 
     public function update($id){
 
-        $newNote = Request::all();
+        $newGroup = Request::all();
 
-        $note = \App\Note::find($id);
-        $note->title = $newNote['title'];
-        if(isset($newNote['group_id'])){
-            $note->group_id = $newNote['group_id'];
-        }
-        $note->description = $newNote['description'];
-        $response = \App\Note::updateNote($note);
+        $group = \App\Group::find($id);
+        $group->title = $newGroup['title'];
+        $response = \App\Group::updateGroup($group);
 
         return response()->json($response)->setStatusCode($response->code);
 
@@ -48,7 +44,15 @@ class NotesController extends Controller
 
     public function delete($id){
 
-        $response = \App\Note::deleteNote($id);
+        $response = \App\Group::deleteGroup($id);
+
+        return response()->json($response)->setStatusCode($response->code);
+
+    }
+
+    public function getNotes($id){
+
+        $response = \App\Group::getNotes($id);
 
         return response()->json($response)->setStatusCode($response->code);
 
